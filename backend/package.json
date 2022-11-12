@@ -7,7 +7,9 @@
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "test": "jest",
-    "test:watch": "jest --watch --coverage"
+    "test:watch": "jest --watch --coverage",
+    "test:e2e": "test/e2e/api.sh",
+    "test:goldenmaster": "testdata/goldenmaster/snapshot.sh"
   },
   "dependencies": {
     "fastify": "4.0.3",
