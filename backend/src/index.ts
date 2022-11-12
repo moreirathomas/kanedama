@@ -1,19 +1,21 @@
-import { ok } from "assert";
-import Fastify from "fastify";
+import { ok } from 'assert';
 
-const pg = require("knex")({
-  client: "pg",
+import Fastify from 'fastify';
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const pg = require('knex')({
+  client: 'pg',
   connection: {
-    host: "127.0.0.1",
+    host: '127.0.0.1',
     port: 5432,
-    user: "postgres",
-    password: "password",
-    searchPath: ["knex", "public"],
+    user: 'postgres',
+    password: 'password',
+    searchPath: ['knex', 'public'],
   },
 });
 
 async function insert() {
-  console.log("migrating 🚀");
+  console.log('migrating 🚀');
   try {
     await pg.raw(`CREATE TABLE Persons (
     PersonID int,
@@ -30,54 +32,63 @@ insert();
 
 Fastify({})
   .route({
-    method: "GET",
-    url: "/health",
-    handler: async (request, response) => {response.send()},
+    method: 'GET',
+    url: '/health',
+    handler: async (request, response) => {
+      response.send();
+    },
   })
   .route({
-    method: "GET",
-    url: "/registrtion",
+    method: 'GET',
+    url: '/registrtion',
     schema: {
       querystring: {
-        name: { type: "string" },
-        email: { type: "string" },
-        password: { type: "string" },
+        name: { type: 'string' },
+        email: { type: 'string' },
+        password: { type: 'string' },
       },
     },
     handler: async (request, reply) => {
       ok(
-        (request.query["name"].length > 4 &&
-          request.query["name"].length < 50) ||
-          (request.query["email"].includes("@") &&
-            request.query["email"].length < 256)
+        // @ts-expect-error - will be fixed
+        (request.query['name'].length > 4 &&
+          // @ts-expect-error - will be fixed
+          request.query['name'].length < 50) ||
+          // @ts-expect-error - will be fixed
+          (request.query['email'].includes('@') &&
+            // @ts-expect-error - will be fixed
+            request.query['email'].length < 256),
       );
-      pg("persons").insert(request.query).then(reply.send({}));
+      pg('persons').insert(request.query).then(reply.send({}));
     },
   })
   .route({
-    method: "GET",
-    url: "/login",
+    method: 'GET',
+    url: '/login',
     schema: {
       querystring: {
-        email: { type: "string" },
-        password: { type: "string" },
+        email: { type: 'string' },
+        password: { type: 'string' },
       },
       response: {
         200: {
-          type: "object",
+          type: 'object',
           properties: {
-            name: { type: "string" },
+            name: { type: 'string' },
           },
         },
       },
     },
     handler: (request, reply) =>
-      pg("persons")
+      pg('persons')
         .where({
-          email: request.query["email"],
-          password: request.query["password"],
+          // @ts-expect-error - will be fixed
+          email: request.query['email'],
+          // @ts-expect-error - will be fixed
+          password: request.query['password'],
         })
-        .first("name")
+        .first('name')
+        // @ts-expect-error - will be fixed
         .then((result) => {
           reply.send(result);
         }),
