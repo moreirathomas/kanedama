@@ -1,6 +1,7 @@
-import { ok } from 'assert';
-
 import Fastify from 'fastify';
+
+import { parseUser } from './user';
+import { isFailure } from './validation';
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const pg = require('knex')({
@@ -49,17 +50,15 @@ Fastify({})
       },
     },
     handler: async (request, reply) => {
-      ok(
-        // @ts-expect-error - will be fixed
-        (request.query['name'].length > 4 &&
-          // @ts-expect-error - will be fixed
-          request.query['name'].length < 50) ||
-          // @ts-expect-error - will be fixed
-          (request.query['email'].includes('@') &&
-            // @ts-expect-error - will be fixed
-            request.query['email'].length < 256),
-      );
-      pg('persons').insert(request.query).then(reply.send({}));
+      // @ts-expect-error - query is not typed
+      const { name, email, password } = request.query;
+
+      const res = parseUser({ name, email, password });
+      if (isFailure(res)) {
+        reply.send({ error: res.error });
+      } else {
+        pg('persons').insert(res).then(reply.send({}));
+      }
     },
   })
   .route({
