@@ -1,9 +1,10 @@
 {
   "scripts": {
     "build": "tsc --build ./tsconfig.json",
-    "start": "npm run build && node ./dist",
     "build:watch": "tsc --build -w ./tsconfig.json",
-    "start:node": "nodemon ./dist/index.js",
+    "start": "node -r dotenv/config ./dist dotenv_config_path=.env.dev",
+    "start:node": "nodemon -r dotenv/config ./dist/index.js dotenv_config_path=.env.dev",
+    "prestart": "npm run build",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
     "test": "jest",
@@ -21,6 +22,7 @@
     "@types/node": "18.11.9",
     "@typescript-eslint/eslint-plugin": "5.42.1",
     "@typescript-eslint/parser": "5.42.1",
+    "dotenv": "16.0.3",
     "eslint": "8.27.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-import-resolver-typescript": "^3.5.2",

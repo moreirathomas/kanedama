@@ -2,18 +2,19 @@ import Fastify from 'fastify';
 import { Knex } from 'knex';
 
 import { connect, migrate } from './database';
+import { getEnv, getEnvInteger, getEnvArray } from './env';
 import { parseUser } from './user';
 import { isFailure } from './validation';
 
 const config: Knex.Config = {
-  client: 'pg',
+  client: getEnv('DB_CLIENT'),
   connection: {
-    host: '127.0.0.1',
-    port: 5432,
-    user: 'postgres',
-    password: 'password',
+    host: getEnv('DB_HOST'),
+    port: getEnvInteger('DB_PORT'),
+    user: getEnv('DB_USER'),
+    password: getEnv('DB_PASSWORD'),
   },
-  searchPath: ['knex', 'public'],
+  searchPath: getEnvArray('DB_SEARCH_PATH'),
 };
 
 const pg = connect(config);
