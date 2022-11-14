@@ -1,35 +1,26 @@
 import Fastify from 'fastify';
+import { Knex } from 'knex';
 
+import { connect, migrate } from './database';
 import { parseUser } from './user';
 import { isFailure } from './validation';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const pg = require('knex')({
+const config: Knex.Config = {
   client: 'pg',
   connection: {
     host: '127.0.0.1',
     port: 5432,
     user: 'postgres',
     password: 'password',
-    searchPath: ['knex', 'public'],
   },
-});
+  searchPath: ['knex', 'public'],
+};
 
-async function insert() {
-  console.log('migrating 🚀');
-  try {
-    await pg.raw(`CREATE TABLE Persons (
-    PersonID int,
-    name varchar(255),
-    email varchar(255),
-    password varchar(255),
-    city varchar(255)
-);`);
-  } catch (error) {
-    console.info(error);
-  }
-}
-insert();
+const pg = connect(config);
+
+// TODO: migrate is async. Await it inside main.
+// TODO: migrate may fail if the table already exists. Handle that case.
+migrate(pg);
 
 Fastify({})
   .route({
@@ -49,7 +40,7 @@ Fastify({})
         password: { type: 'string' },
       },
     },
-    handler: async (request, reply) => {
+    handler: (request, reply) => {
       // @ts-expect-error - query is not typed
       const { name, email, password } = request.query;
 
@@ -57,7 +48,9 @@ Fastify({})
       if (isFailure(res)) {
         reply.send({ error: res.error });
       } else {
-        pg('persons').insert(res).then(reply.send({}));
+        pg('persons')
+          .insert(res)
+          .then(() => reply.send({}));
       }
     },
   })
@@ -78,19 +71,19 @@ Fastify({})
         },
       },
     },
-    handler: (request, reply) =>
+    handler: (request, reply) => {
+      // @ts-expect-error - query is not typed
+      const { email, password } = request.query;
       pg('persons')
         .where({
-          // @ts-expect-error - will be fixed
-          email: request.query['email'],
-          // @ts-expect-error - will be fixed
-          password: request.query['password'],
+          email,
+          password,
         })
         .first('name')
-        // @ts-expect-error - will be fixed
         .then((result) => {
           reply.send(result);
-        }),
+        });
+    },
   })
   .listen(3000);
 
