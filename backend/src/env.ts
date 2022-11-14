@@ -54,14 +54,3 @@ function parseStringArray(value: string): string[] {
   }
   return parsed;
 }
-
-// const config: Knex.Config = {
-//     client: getEnv('DB_CLIENT'),
-//     connection: {
-//       host: getEnv('DB_HOST'),
-//       port: getEnvInteger('DB_PORT'),
-//       user: getEnv('DB_USER'),
-//       password: getEnv('DB_PASSWORD'),
-//     },
-//     searchPath: getEnvArray('DB_SEARCH_PATH'),
-//   };
