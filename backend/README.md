@@ -2,55 +2,176 @@
 
 Here's a very basic little app (for now, we have big expectations!).
 
-We've been told it is production-ready... but, having a look at the code, we're not quite sure about that.
-In fact, we're not even sure it does what we expect: it looks like a bunch of copy/pastes from hello world example.
+## Development
 
-It's not in production yet so the current API contract can be modified.
+### Prerequisites
 
-Here are the requirements we gave :
+- [Node.js](https://nodejs.org/en/) (>=18.0.0)
+- [Docker](https://www.docker.com/) to run a local [PostgreSQL](https://www.postgresql.org/) database (or run your own)
 
-## User registration
-A user can register with a name, a valid email, a valid password
+Install dependencies:
 
-## User login
-A user can login with their email & password, if it's ok, their name will be returned (we said it was a super simple app)
+```bash
+npm install
+```
 
-## Business requirements
+### Serve the app
 
-### User
-a user must have a name, an email address, a password
+```bash
+npm run start
+```
+
+### Start the database
+
+You may want to use Docker to run a local PostgreSQL database for development:
+
+```bash
+docker run -e POSTGRES_PASSWORD=password -d -p5432:5432 postgres
+```
+
+Note that the exposed port `5432` is the default port for PostgreSQL. If you want to use a different port, you need to update `DB_PORT` in the `.env` file (or similar).
+
+Make sure to migrate the database on fresh installations:
+
+```bash
+npm run migrate
+```
+
+### Testing
+
+```bash
+npm run test
+```
+
+Will run all tests (unit and end-to-end).
+
+To run only unit tests:
+
+```bash
+npm run test:unit
+```
+
+To run only end-to-end tests:
+
+```bash
+npm run test:e2e
+```
+
+Note that the end-to-end tests will perform actual actions against the API and induce read and write operations on the database. To avoid unexpected behavior, it is recommended to use a fresh database for testing. Furthermore, the end-to-end test requires the server to be running.
+
+```bash
+# If using Docker
+# stop, restart and setup the database
+docker stop <container-id> && docker rm <container-id>
+docker run -e POSTGRES_PASSWORD=password -d -p5432:5432 postgres
+npm run migrate
+
+# start the server in a separate terminal
+npm run start
+
+npm run test:e2e
+```
+
+## Features
+
+### User registration
+
+A user can register with a name, a valid email, a valid password.
+
+A user has a name, an email address and a password.
+
 - the name must be alphanumeric charaters, its lenght must be in `[4, 50]`
 - the email address must contain alphanumeric charaters, a single `@` symbol, its length is `<` 256
 - the password must be alphanumeric charaters, its lenght must be in `[8, 255]`
 
-We expect not to have duplicate names or email addresses among our users
+Names and email addresses are unique among our users.
 
-### User registration
-If invalid values are received during the registration, we expect in return the list of failed validations
+If invalid values are received during the registration, we return the list of failed validations.
 
-### Errors
-You're free to handle errors in the way you consider the best
+### User login
 
-### Logs
-We'd like to have JSON logs outputted in the stdout
+A user can login with their email & password, if it's ok, their name will be returned.
 
-### Health check
-The `/healthz` endpoint is used to know when its ok to send HTTP traffic to the app (when it responds `200`).
+## API
 
-The app will be automatically restarted when it quits (so you don't have to care about this mechanism).
+### Register a user
 
-### Start db
-
-```
-docker run -e POSTGRES_PASSWORD=password -d -p5432:5432 postgres
+```bash
+POST /users
 ```
 
-Just in case you need one. By the way, we don't expect you to dockerize the application. 
+#### Query parameters
 
-# Note to the candidate
-"prod-ready" can be a very time-consumming process and we don't expect you to spend too long on this test so
-if you think about things that should be done but don't have the time, please write them down in the readme.
+| Name       | Type     | Description                             |
+| ---------- | -------- | --------------------------------------- |
+| `name`     | `string` | **Required**. The name of the user.     |
+| `email`    | `string` | **Required**. The email of the user.    |
+| `password` | `string` | **Required**. The password of the user. |
 
-### Side note
-You heard about hexagonal / clean architecture, TDD, BDD, craftsmanship ?
-Show us your skills even if some of these practices seem overkill for such a small app. ;)
+#### HTTP response status codes
+
+| Status Code | Description                              |
+| ----------- | ---------------------------------------- |
+| `201`       | Created.                                 |
+| `400`       | Invalid parameters or validation failed. |
+| `409`       | Email or name already taken.             |
+
+#### Response body
+
+None if successful.
+
+Error object if the validation failed:
+
+```json
+{
+  "error": "Validation failed",
+  "reasons": {
+    "name": ["must be alphanumeric", "must be between 4 and 50 characters"],
+    "email": ["must be a valid email", "must be less than 256 characters"],
+    "password": ["must be alphanumeric", "must be between 8 and 255 characters"]
+  }
+}
+```
+
+### Login
+
+```bash
+POST /login
+```
+
+#### Query parameters
+
+| Name       | Type     | Description                             |
+| ---------- | -------- | --------------------------------------- |
+| `email`    | `string` | **Required**. The email of the user.    |
+| `password` | `string` | **Required**. The password of the user. |
+
+#### HTTP response status codes
+
+| Status Code | Description         |
+| ----------- | ------------------- |
+| `200`       | OK.                 |
+| `400`       | Invalid parameters. |
+| `401`       | Wrong credentials.  |
+
+#### Response body
+
+```json
+{
+  "name": "John Doe"
+}
+```
+
+None if failed.
+
+### Check app health
+
+```bash
+GET /healthz
+```
+
+#### HTTP response status codes
+
+| Status Code | Description                 |
+| ----------- | --------------------------- |
+| `200`       | OK to receive HTTP traffic. |
