@@ -1,12 +1,13 @@
 import { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts';
 import { FastifyPluginAsync } from 'fastify';
+import { DatabaseError } from 'pg';
 
 import { parseUser } from '../../user';
 import { isFailure } from '../../validation';
 import { WithDatabase } from '../plugins';
 
 const schema = {
-  querystring: {
+  body: {
     type: 'object',
     properties: {
       name: { type: 'string' },
@@ -23,25 +24,37 @@ export const handleRegistration: FastifyPluginAsync<WithDatabase> = async (
 ) => {
   app
     .withTypeProvider<JsonSchemaToTsProvider>()
-    .get('/registration', { schema }, async (request, reply) => {
-      const { name, email, password } = request.query;
+    .post('/users', { schema }, async (request, reply) => {
+      const { name, email, password } = request.body;
 
-      const res = parseUser({ name, email, password });
-      if (isFailure(res)) {
+      const userRes = parseUser({ name, email, password });
+
+      if (isFailure(userRes)) {
+        app.log.warn(userRes);
         reply.status(400);
-        app.log.warn(res.error);
-        return { error: res.error };
+        return {
+          error: 'Validation failed',
+          reasons: userRes.error,
+        };
       }
 
       try {
-        await database('persons').insert(res);
+        await database('persons').insert(userRes);
       } catch (error) {
-        reply.status(500);
         app.log.error(error);
+
+        if (error instanceof DatabaseError && error.code === '23505') {
+          reply.status(409);
+          return {
+            error: 'Email or name already taken',
+          };
+        }
+
+        reply.status(500);
         return { error: 'Internal server error' };
       }
 
       reply.status(201);
-      return res;
+      return userRes;
     });
 };

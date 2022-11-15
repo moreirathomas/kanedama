@@ -26,10 +26,12 @@ const pg = knex({
   searchPath: JSON.parse(config.DB_SEARCH_PATH),
 });
 
-const query = `CREATE TABLE Persons (
+const dropTableQuery = 'DROP TABLE IF EXISTS Persons;';
+
+const createTableQuery = `CREATE TABLE IF NOT EXISTS Persons (
     PersonID int,
-    name varchar(255),
-    email varchar(255),
+    name varchar(255) UNIQUE,
+    email varchar(255) UNIQUE,
     password varchar(255),
     city varchar(255)
 );`;
@@ -37,7 +39,8 @@ const query = `CREATE TABLE Persons (
 async function migrate() {
   console.log('migrating 🚀');
   try {
-    await pg.raw(query);
+    await pg.raw(dropTableQuery);
+    await pg.raw(createTableQuery);
     console.log('migration successful');
   } catch (error) {
     console.error(error);

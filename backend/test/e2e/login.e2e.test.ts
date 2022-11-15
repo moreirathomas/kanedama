@@ -9,9 +9,11 @@ describe('Login', () => {
       password: 'password1234567890',
     };
 
-    const res = await fetch(
-      `${url}?email=${login.email}&password=${login.password}`,
-    );
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(login),
+    });
 
     expect(res.status).toBe(200);
 
@@ -26,9 +28,11 @@ describe('Login', () => {
       password: '123',
     };
 
-    const res = await fetch(
-      `${url}?email=${login.email}&password=${login.password}`,
-    );
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(login),
+    });
 
     expect(res.status).toBe(401);
   });
@@ -38,7 +42,11 @@ describe('Login', () => {
       email: 'alice@hey.com',
     };
 
-    const res = await fetch(`${url}?email=${login.email}&foo=bar`);
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(login),
+    });
     expect(res.status).toBe(400);
   });
 });

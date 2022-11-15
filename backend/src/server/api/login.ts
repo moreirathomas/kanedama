@@ -4,7 +4,7 @@ import { FastifyPluginAsync } from 'fastify';
 import { WithDatabase } from '../plugins';
 
 const schema = {
-  querystring: {
+  body: {
     type: 'object',
     properties: {
       email: { type: 'string' },
@@ -20,8 +20,8 @@ export const handleLogin: FastifyPluginAsync<WithDatabase> = async (
 ) => {
   app
     .withTypeProvider<JsonSchemaToTsProvider>()
-    .get('/login', { schema }, async (request, reply) => {
-      const { email, password } = request.query;
+    .post('/login', { schema }, async (request, reply) => {
+      const { email, password } = request.body;
 
       try {
         const res = await database('persons')

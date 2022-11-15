@@ -12,6 +12,7 @@
     "test:unit": "jest --testPathIgnorePatterns=test/e2e",
     "test:unit-dev": "npm run test:unit -- --watchAll --coverage",
     "test:e2e": "jest --testPathIgnorePatterns=src --testSequencer=./test/e2e/test-sequencer.js --runInBand",
+    "pretest:e2e": "npm run migrate",
     "migrate": "node ./script/migrate.js"
   },
   "dependencies": {
@@ -23,6 +24,7 @@
   "devDependencies": {
     "@types/jest": "29.2.2",
     "@types/node": "18.11.9",
+    "@types/pg": "8.6.5",
     "@typescript-eslint/eslint-plugin": "5.42.1",
     "@typescript-eslint/parser": "5.42.1",
     "dotenv": "16.0.3",
