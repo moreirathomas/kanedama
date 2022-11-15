@@ -1,4 +1,4 @@
-import Fastify from 'fastify';
+import { fastify } from 'fastify';
 import { Knex } from 'knex';
 
 import { registerRoutes } from './routes';
@@ -9,7 +9,7 @@ interface Options {
 }
 
 export function start(opts: Options, databaseConnection: Knex) {
-  const app = Fastify({ logger: opts.logger });
+  const app = fastify({ logger: opts.logger });
 
   registerRoutes(app, databaseConnection);
 

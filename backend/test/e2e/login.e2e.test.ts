@@ -32,6 +32,15 @@ describe('Login', () => {
 
     expect(res.status).toBe(401);
   });
+
+  test('returns 400 if the parameters are missing or incorrect', async () => {
+    const login = {
+      email: 'alice@hey.com',
+    };
+
+    const res = await fetch(`${url}?email=${login.email}&foo=bar`);
+    expect(res.status).toBe(400);
+  });
 });
 
 // Make the file a module to compile under '--isolatedModules'.

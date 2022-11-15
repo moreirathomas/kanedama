@@ -21,7 +21,7 @@ describe('Login', () => {
     expect(actual).toEqual(expected);
   });
 
-  test('returns the list of failed validations if invalid values are provided', async () => {
+  test('returns 400 and the list of failed validations if invalid values are provided', async () => {
     const user = {
       name: '@Alice!',
       email: 'bademail',
@@ -43,6 +43,15 @@ describe('Login', () => {
       },
     };
     expect(actual).toEqual(expected);
+  });
+
+  test('returns 400 if the parameters are missing or incorrect', async () => {
+    const user = {
+      email: 'alice@hey.com',
+    };
+
+    const res = await fetch(`${url}?email=${user.email}&foo=bar`);
+    expect(res.status).toBe(400);
   });
 });
 
