@@ -1,16 +1,17 @@
 {
   "scripts": {
     "build": "tsc --build ./tsconfig.json",
-    "build:watch": "tsc --build -w ./tsconfig.json",
+    "build:watch": "npm run build -- -w",
+    "prebuild": "rm -rf ./dist",
     "start": "node -r dotenv/config ./dist dotenv_config_path=.env.dev",
     "start:node": "nodemon -r dotenv/config ./dist/index.js dotenv_config_path=.env.dev",
     "prestart": "npm run build",
     "lint": "eslint src --ext .ts",
     "lint:fix": "eslint src --ext .ts --fix",
-    "test": "jest",
-    "test:watch": "jest --watch --coverage",
-    "test:e2e": "test/e2e/api.sh",
-    "test:goldenmaster": "testdata/goldenmaster/snapshot.sh",
+    "test": "npm run test:unit && npm run test:e2e",
+    "test:unit": "jest --testPathIgnorePatterns=test/e2e/",
+    "test:unit-dev": "npm run test:unit -- --watchAll --coverage",
+    "test:e2e": "jest --testPathPatterns=test/e2e/ --testSequencer=./test/e2e/test-sequencer.js --runInBand",
     "migrate": "node ./script/migrate.js"
   },
   "dependencies": {
