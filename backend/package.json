@@ -10,7 +10,8 @@
     "test": "jest",
     "test:watch": "jest --watch --coverage",
     "test:e2e": "test/e2e/api.sh",
-    "test:goldenmaster": "testdata/goldenmaster/snapshot.sh"
+    "test:goldenmaster": "testdata/goldenmaster/snapshot.sh",
+    "migrate": "node ./script/migrate.js"
   },
   "dependencies": {
     "fastify": "4.0.3",

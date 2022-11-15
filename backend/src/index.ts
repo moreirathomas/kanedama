@@ -1,6 +1,6 @@
 import { Knex } from 'knex';
 
-import { connect, migrate } from './database';
+import { connect } from './database';
 import { getEnv, getEnvInteger, getEnvArray } from './env';
 import { start } from './server';
 
@@ -19,8 +19,6 @@ const config: Knex.Config = {
 
 async function main() {
   const pg = connect(config);
-
-  await migrate(pg);
 
   const address = await start({ port: PORT, logger: true }, pg);
   console.log(`Server listening on ${address} 🚀`);
