@@ -1,38 +1,37 @@
-const EitherType = {
-  Left: Symbol('left'),
-  Right: Symbol('right'),
-};
-
 export type Either<L, R> = Left<L> | Right<R>;
 
-export type Left<L> = {
-  type: typeof EitherType.Left;
+export interface Left<L> {
   value: L;
-};
+  isLeft(): this is Left<L>;
+  isRight(): false;
+}
 
-export type Right<R> = {
-  type: typeof EitherType.Right;
+export interface Right<R> {
   value: R;
-};
+  isLeft(): false;
+  isRight(): this is Right<R>;
+}
 
-export function Left<L>(value: L): Left<L> {
+export function left<L>(value: L): Left<L> {
   return {
-    type: EitherType.Left,
     value,
+    isLeft() {
+      return true;
+    },
+    isRight() {
+      return false;
+    },
   };
 }
 
-export function Right<R>(value: R): Right<R> {
+export function right<R>(value: R): Right<R> {
   return {
-    type: EitherType.Right,
     value,
+    isLeft() {
+      return false;
+    },
+    isRight() {
+      return true;
+    },
   };
-}
-
-export function isLeft<L, R>(val: Either<L, R>): val is Left<L> {
-  return val.type === EitherType.Left;
-}
-
-export function isRight<L, R>(val: Either<L, R>): val is Right<R> {
-  return val.type === EitherType.Right;
 }

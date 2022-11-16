@@ -1,7 +1,6 @@
 import { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts';
 import { FastifyPluginAsync } from 'fastify';
 
-import { isLeft } from '../../lib/either';
 import { WithUserRepository } from '../plugins';
 
 const schema = {
@@ -26,7 +25,7 @@ export const handleLogin: FastifyPluginAsync<WithUserRepository> = async (
 
       const user = await repository.findOne({ email, password });
 
-      if (isLeft(user)) {
+      if (user.isLeft()) {
         switch (user.value.error) {
           case 'NOT_FOUND':
             reply.status(401);

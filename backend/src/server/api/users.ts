@@ -2,7 +2,6 @@ import { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts
 import { FastifyPluginAsync } from 'fastify';
 
 import { parseUser } from '../../features/user';
-import { isLeft } from '../../lib/either';
 import { isFailure } from '../../lib/validation';
 import { WithUserRepository } from '../plugins';
 
@@ -39,7 +38,7 @@ export const handleRegistration: FastifyPluginAsync<
 
       const createdUser = await repository.createOne(parsedUser);
 
-      if (isLeft(createdUser)) {
+      if (createdUser.isLeft()) {
         switch (createdUser.value.error) {
           case 'UNIQUE_VIOLATION':
             reply.status(409);
@@ -53,7 +52,6 @@ export const handleRegistration: FastifyPluginAsync<
             };
         }
       }
-
       reply.status(201);
     });
 };
