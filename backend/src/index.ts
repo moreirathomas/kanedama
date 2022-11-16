@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 
 import { connect } from './database';
-import { getEnv, getEnvInteger, getEnvArray } from './env';
+import { getEnv, getEnvInteger, getEnvArray } from './lib/env';
 import { start } from './server';
 
 async function main() {

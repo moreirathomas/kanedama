@@ -1,3 +1,4 @@
+root: true
 env:
   node: true
   es6: true
@@ -12,7 +13,7 @@ extends:
 parser: '@typescript-eslint/parser'
 parserOptions:
   ecmaVersion: latest
-  project: [./*/tsconfig.eslint.json]
+  project: [./*/tsconfig.json]
   sourceType: module
 plugins:
   - '@typescript-eslint'
@@ -21,7 +22,8 @@ plugins:
 settings:
   import/resolver:
     typescript:
-      project: ./tsconfig.json
+      project: ./*/tsconfig.json
+      tsconfigRootDir: .
     node:
       paths: [src, nodes_modules]
   import/parsers:
@@ -63,6 +65,11 @@ rules:
         caseInsensitive: true
   import/no-internal-modules:
     - error
+    - allow: [
+          '**/node_modules/**', # third party modules
+          '**/index.ts', # reach any module with an index file exposing its public api
+          '**/lib/*', # reach any top level module inside lib folder
+        ]
 
   '@typescript-eslint/naming-convention':
     - error

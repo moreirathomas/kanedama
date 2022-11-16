@@ -1,9 +1,9 @@
 import { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts';
 import { FastifyPluginAsync } from 'fastify';
 
-import { isLeft } from '../../either';
-import { parseUser } from '../../user';
-import { isFailure } from '../../validation';
+import { parseUser } from '../../features/user';
+import { isLeft } from '../../lib/either';
+import { isFailure } from '../../lib/validation';
 import { WithUserRepository } from '../plugins';
 
 const schema = {

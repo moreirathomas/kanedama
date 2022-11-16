@@ -9,15 +9,15 @@ class CustomSequencer extends Sequencer {
     const copyTests = Array.from(tests);
     return copyTests.sort((testA, testB) => {
       if (
-        testA.path.includes('registration.e2e.test.ts') &&
-        testB.path.includes('login.e2e.test.ts')
+        testA.path.includes('registration.test.ts') &&
+        testB.path.includes('login.test.ts')
       ) {
         return -1;
       }
 
       if (
-        testA.path.includes('login.e2e.test.ts') &&
-        testB.path.includes('registration.e2e.test.ts')
+        testA.path.includes('login.test.ts') &&
+        testB.path.includes('registration.test.ts')
       ) {
         return 1;
       }

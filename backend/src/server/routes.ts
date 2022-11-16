@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import { Knex } from 'knex';
 
-import { userRepository } from '../user';
+import { userRepository } from '../features/user';
 import { handleRegistration, handleLogin } from './api';
 import { handleHealthCheck } from './health';
 

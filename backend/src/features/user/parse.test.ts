@@ -1,4 +1,4 @@
-import { Failure, isFailure } from '../validation';
+import { Failure, isFailure } from '../../lib/validation';
 import { parseUser, ErrorParseUser } from './parse';
 
 describe('User validation', () => {

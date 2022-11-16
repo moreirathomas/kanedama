@@ -1,14 +1,9 @@
 import { Knex } from 'knex';
 import { DatabaseError } from 'pg';
 
-import { Either, Left, Right } from '../either';
+import { RepositoryResult } from '../../database';
+import { Left, Right } from '../../lib/either';
 import { User } from './type';
-
-interface RepositoryError {
-  error: 'NOT_FOUND' | 'UNIQUE_VIOLATION' | 'UNKNOWN';
-}
-
-type RepositoryResult<T> = Promise<Either<RepositoryError, T>>;
 
 export interface UserRepository {
   createOne(user: User): RepositoryResult<User>;

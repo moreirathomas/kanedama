@@ -1,4 +1,9 @@
-import { Validation, Failure, isFailure, mergeFailures } from '../validation';
+import {
+  Validation,
+  Failure,
+  isFailure,
+  mergeFailures,
+} from '../../lib/validation';
 import { User } from './type';
 
 const alphanumeric = (input: string): Validation<string, string> => {
