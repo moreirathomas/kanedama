@@ -175,3 +175,13 @@ GET /healthz
 | Status Code | Description                 |
 | ----------- | --------------------------- |
 | `200`       | OK to receive HTTP traffic. |
+
+## Next steps
+
+- [ ] perform a health check on the db on startup (is it up? is the migration done? ...)
+- [ ] improve the logging system (pass a logger to the app, notably allow pretty printing in dev mode)
+- [ ] improve end-to-end tests workflow (flushing the database before each test outside of npm scripts, ...)
+- [ ] investigate where `repository` files should be placed (next to the `feature` files or inside `database`, which are the abstractions we can make? ...)
+- [ ] investigate abstractions and in-house scaffolding tools for defining routes and controllers
+- [ ] setup a CI pipeline (GitHub Actions? a monorepo and npm workspaces make it more complicated to setup because of file changes detection)
+- [ ] define a deployment strategy
