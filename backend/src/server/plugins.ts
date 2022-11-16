@@ -1,5 +1,5 @@
-import { Knex } from 'knex';
+import { UserRepository } from '../user';
 
-export type WithDatabase = {
-  database: Knex;
-};
+export interface WithUserRepository {
+  repository: UserRepository;
+}

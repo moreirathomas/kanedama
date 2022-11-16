@@ -1,11 +1,16 @@
 import { FastifyInstance } from 'fastify';
 import { Knex } from 'knex';
 
+import { userRepository } from '../user';
 import { handleRegistration, handleLogin } from './api';
 import { handleHealthCheck } from './health';
 
 export function registerRoutes(app: FastifyInstance, database: Knex) {
   app.register(handleHealthCheck);
-  app.register(handleRegistration, { database });
-  app.register(handleLogin, { database });
+
+  {
+    const repository = userRepository(database);
+    app.register(handleRegistration, { repository });
+    app.register(handleLogin, { repository });
+  }
 }

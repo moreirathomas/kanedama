@@ -1,10 +1,10 @@
 import { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts';
 import { FastifyPluginAsync } from 'fastify';
-import { DatabaseError } from 'pg';
 
+import { isLeft } from '../../either';
 import { parseUser } from '../../user';
 import { isFailure } from '../../validation';
-import { WithDatabase } from '../plugins';
+import { WithUserRepository } from '../plugins';
 
 const schema = {
   body: {
@@ -18,43 +18,42 @@ const schema = {
   },
 } as const;
 
-export const handleRegistration: FastifyPluginAsync<WithDatabase> = async (
-  app,
-  { database },
-) => {
+export const handleRegistration: FastifyPluginAsync<
+  WithUserRepository
+> = async (app, { repository }) => {
   app
     .withTypeProvider<JsonSchemaToTsProvider>()
     .post('/users', { schema }, async (request, reply) => {
       const { name, email, password } = request.body;
 
-      const userRes = parseUser({ name, email, password });
+      const parsedUser = parseUser({ name, email, password });
 
-      if (isFailure(userRes)) {
-        app.log.warn(userRes);
+      if (isFailure(parsedUser)) {
+        app.log.warn(parsedUser);
         reply.status(400);
         return {
           error: 'Validation failed',
-          reasons: userRes.error,
+          reasons: parsedUser.error,
         };
       }
 
-      try {
-        await database('persons').insert(userRes);
-      } catch (error) {
-        app.log.error(error);
+      const createdUser = await repository.createOne(parsedUser);
 
-        if (error instanceof DatabaseError && error.code === '23505') {
-          reply.status(409);
-          return {
-            error: 'Email or name already taken',
-          };
+      if (isLeft(createdUser)) {
+        switch (createdUser.value.error) {
+          case 'UNIQUE_VIOLATION':
+            reply.status(409);
+            return {
+              error: 'Email or name already taken',
+            };
+          default:
+            reply.status(500);
+            return {
+              error: 'Internal server error',
+            };
         }
-
-        reply.status(500);
-        return { error: 'Internal server error' };
       }
 
       reply.status(201);
-      return userRes;
     });
 };

@@ -17,10 +17,6 @@ describe('Login', () => {
     });
 
     expect(res.status).toBe(201);
-
-    const actual = await res.json();
-    const expected = user;
-    expect(actual).toEqual(expected);
   });
 
   test('returns 409 if the email or name is already taken', async () => {

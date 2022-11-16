@@ -1,7 +1,8 @@
 import { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts';
 import { FastifyPluginAsync } from 'fastify';
 
-import { WithDatabase } from '../plugins';
+import { isLeft } from '../../either';
+import { WithUserRepository } from '../plugins';
 
 const schema = {
   body: {
@@ -14,35 +15,33 @@ const schema = {
   },
 } as const;
 
-export const handleLogin: FastifyPluginAsync<WithDatabase> = async (
+export const handleLogin: FastifyPluginAsync<WithUserRepository> = async (
   app,
-  { database },
+  { repository },
 ) => {
   app
     .withTypeProvider<JsonSchemaToTsProvider>()
     .post('/login', { schema }, async (request, reply) => {
       const { email, password } = request.body;
 
-      try {
-        const res = await database('persons')
-          .where({
-            email,
-            password,
-          })
-          .first('name');
+      const user = await repository.findOne({ email, password });
 
-        if (!res) {
-          reply.status(401);
-          app.log.warn('Invalid email or password');
-          return { error: 'Invalid email or password' };
+      if (isLeft(user)) {
+        switch (user.value.error) {
+          case 'NOT_FOUND':
+            reply.status(401);
+            return {
+              error: 'Email or password is incorrect',
+            };
+          default:
+            reply.status(500);
+            return {
+              error: 'Internal server error',
+            };
         }
-
-        reply.status(200);
-        return res;
-      } catch (error) {
-        reply.status(500);
-        app.log.error(error);
-        return { error: 'Internal server error' };
       }
+
+      reply.status(200);
+      return { name: user.value.name };
     });
 };
