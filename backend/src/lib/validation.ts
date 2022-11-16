@@ -1,39 +1,33 @@
-const ValidationType = {
-  Failure: Symbol(':failure'),
-};
+import { Either, left, right } from './either';
 
-export type Validation<T, E> = T | Failure<E>;
-
-export type Failure<E> = {
-  type: typeof ValidationType.Failure;
-  error: E;
-};
-
-export function Failure<E>(error: E): Failure<E> {
-  return {
-    type: ValidationType.Failure,
-    error,
-  };
-}
-
-export function isFailure<E>(val: unknown): val is Failure<E> {
-  return (
-    typeof val === 'object' &&
-    val !== null &&
-    (val as Failure<E>).type === ValidationType.Failure
-  );
-}
-
-export function mergeFailures<T, E, U>(
-  fns: ((input: U) => Validation<T, E>)[],
-) {
+/**
+ * Applies a list of functions to an input, returning a list of errors if any
+ * of the functions return an instance of `Either` that is `Left`.
+ * @example
+ * const fns = [
+ *   (input: unknown) => typeof input === 'string' ? right(input) : left('not a string'),
+ *   (input: unknown) => typeof input === 'number' ? right(input) : left('not a number'),
+ * ];
+ * const result = applyValidation(fns)(true);
+ * assert(result.value).equal(['not a string', 'not a number']);
+ */
+export function applyValidation<E, T, U>(
+  fns: ((input: U) => Either<E, T>)[],
+): (input: U) => Either<E[], T> {
   return (input: U) => {
-    return fns.reduce((errors, fn) => {
-      const prev = fn(input);
-      if (isFailure<E>(prev)) {
-        return Failure([...errors.error, prev.error]);
+    const v = fns.reduce((acc, fn) => {
+      const res = fn(input);
+
+      if (res.isLeft()) {
+        if (acc.isLeft()) {
+          return left([...acc.value, res.value]);
+        }
+        return left([res.value]);
       }
-      return errors;
-    }, Failure([] as E[]));
+
+      return acc;
+    }, right(input) as Either<E[], T>);
+
+    return v;
   };
 }
