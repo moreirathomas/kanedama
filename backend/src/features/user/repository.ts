@@ -1,7 +1,7 @@
 import { Knex } from 'knex';
 import { DatabaseError } from 'pg';
 
-import { RepositoryResult } from '../../database';
+import { RepositoryResult, RepositoryError } from '../../database';
 import { left, right } from '../../lib/either';
 import { User } from './type';
 
@@ -24,12 +24,12 @@ export const userRepository = (databaseConnection: Knex): UserRepository => {
           // https://www.postgresql.org/docs/9.5/errcodes-appendix.html
           switch (error.code) {
             case '23505':
-              return left({ error: 'UNIQUE_VIOLATION' });
+              return left<RepositoryError>('UNIQUE_VIOLATION');
             default:
               break;
           }
         }
-        return left({ error: 'UNKNOWN' });
+        return left<RepositoryError>('UNKNOWN');
       }
     },
 
@@ -37,13 +37,13 @@ export const userRepository = (databaseConnection: Knex): UserRepository => {
       try {
         const user = await query().where({ email, password }).first('*');
         if (!user) {
-          return left({ error: 'NOT_FOUND' });
+          return left<RepositoryError>('NOT_FOUND');
         }
         return right(user);
       } catch (error) {
         console.error(error);
 
-        return left({ error: 'UNKNOWN' });
+        return left<RepositoryError>('UNKNOWN');
       }
     },
   };

@@ -26,7 +26,7 @@ export const handleLogin: FastifyPluginAsync<WithUserRepository> = async (
       const user = await repository.findOne({ email, password });
 
       if (user.isLeft()) {
-        switch (user.value.error) {
+        switch (user.value) {
           case 'NOT_FOUND':
             reply.status(401);
             return {

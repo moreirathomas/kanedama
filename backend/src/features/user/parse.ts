@@ -1,63 +1,69 @@
-import {
-  Validation,
-  Failure,
-  isFailure,
-  mergeFailures,
-} from '../../lib/validation';
+import { Either, left, right } from '../../lib/either';
+import { applyValidation } from '../../lib/validation';
 import { User } from './type';
 
-const alphanumeric = (input: string): Validation<string, string> => {
-  return !input.match(/^[\w]+$/) ? Failure('must be alphanumeric') : input;
+type AlphanumericError = 'must be alphanumeric';
+
+const alphanumeric = (input: string): Either<AlphanumericError, string> => {
+  return !input.match(/^[\w]+$/)
+    ? left('must be alphanumeric' as AlphanumericError)
+    : right(input);
 };
 
-const lengthBetween =
-  (min: number, max: number) =>
-  (input: string): Validation<string, string> => {
+type LengthError = `must be between ${number} and ${number} characters`;
+
+const lengthBetween = (min: number, max: number) => {
+  return (input: string): Either<LengthError, string> => {
     return input.length < min || input.length > max
-      ? Failure(`must be between ${min} and ${max} characters`)
-      : input;
+      ? left(`must be between ${min} and ${max} characters` as LengthError)
+      : right(input);
   };
+};
 
-const alphanumericEmail = (input: string): Validation<string, string> => {
+type AlphanumericEmailError =
+  `${AlphanumericError} and contain a single @ symbol`;
+
+const alphanumericEmail = (
+  input: string,
+): Either<AlphanumericEmailError, string> => {
   return !input.match(/^[\w]+@([\w]+\.)+[\w]+$/)
-    ? Failure('must be alphanumeric and contain a single @ symbol')
-    : input;
+    ? left(
+        'must be alphanumeric and contain a single @ symbol' as AlphanumericEmailError,
+      )
+    : right(input);
 };
 
-const parseName = (input: string): Validation<string, string[]> => {
-  const errors = mergeFailures([alphanumeric, lengthBetween(4, 50)])(input);
-
-  return errors.error.length > 0 ? Failure(errors.error) : input;
+const parseName = (input: string) => {
+  const fns = [alphanumeric, lengthBetween(4, 50)];
+  return applyValidation(fns)(input);
 };
 
-const parseEmail = (input: string): Validation<string, string[]> => {
-  const errors = mergeFailures([alphanumericEmail, lengthBetween(0, 256)])(
-    input,
-  );
-
-  return errors.error.length > 0 ? Failure(errors.error) : input;
+const parseEmail = (input: string) => {
+  const fns = [alphanumericEmail, lengthBetween(0, 256)];
+  return applyValidation(fns)(input);
 };
 
-const parsePassword = (input: string): Validation<string, string[]> => {
-  const errors = mergeFailures([alphanumeric, lengthBetween(8, 255)])(input);
-
-  return errors.error.length > 0 ? Failure(errors.error) : input;
+const parsePassword = (input: string) => {
+  const fns = [alphanumeric, lengthBetween(8, 255)];
+  return applyValidation(fns)(input);
 };
 
-export type ErrorParseUser = { [K in keyof User]?: string[] };
+export type ErrorParseUser = Record<keyof User, string[] | undefined>;
 
-export const parseUser = (input: User): Validation<User, ErrorParseUser> => {
+export const parseUser = (input: User): Either<ErrorParseUser, User> => {
   const name = parseName(input.name);
   const email = parseEmail(input.email);
   const password = parsePassword(input.password);
 
-  if (isFailure(name) || isFailure(email) || isFailure(password)) {
-    return Failure({
-      name: isFailure(name) ? name.error : [],
-      email: isFailure(email) ? email.error : [],
-      password: isFailure(password) ? password.error : [],
-    });
+  const errors: ErrorParseUser = {
+    name: name.isLeft() ? name.value : undefined,
+    email: email.isLeft() ? email.value : undefined,
+    password: password.isLeft() ? password.value : undefined,
+  };
+
+  if (Object.values(errors).some((error) => error !== undefined)) {
+    return left(errors);
   }
 
-  return input;
+  return right(input);
 };

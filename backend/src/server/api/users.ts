@@ -2,7 +2,6 @@ import { JsonSchemaToTsProvider } from '@fastify/type-provider-json-schema-to-ts
 import { FastifyPluginAsync } from 'fastify';
 
 import { parseUser } from '../../features/user';
-import { isFailure } from '../../lib/validation';
 import { WithUserRepository } from '../plugins';
 
 const schema = {
@@ -27,19 +26,19 @@ export const handleRegistration: FastifyPluginAsync<
 
       const parsedUser = parseUser({ name, email, password });
 
-      if (isFailure(parsedUser)) {
+      if (parsedUser.isLeft()) {
         app.log.warn(parsedUser);
         reply.status(400);
         return {
           error: 'Validation failed',
-          reasons: parsedUser.error,
+          reasons: parsedUser.value,
         };
       }
 
-      const createdUser = await repository.createOne(parsedUser);
+      const createdUser = await repository.createOne(parsedUser.value);
 
       if (createdUser.isLeft()) {
-        switch (createdUser.value.error) {
+        switch (createdUser.value) {
           case 'UNIQUE_VIOLATION':
             reply.status(409);
             return {
