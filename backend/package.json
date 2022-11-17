@@ -1,4 +1,8 @@
 {
+  "version": "1.0.0",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "scripts": {
     "build": "tsc --build ./tsconfig.build.json",
     "build:watch": "npm run build -- -w",

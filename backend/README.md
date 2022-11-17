@@ -100,7 +100,7 @@ A user can login with their email & password, if it's ok, their name will be ret
 POST /users
 ```
 
-#### Query parameters
+#### Body parameters
 
 | Name       | Type     | Description                             |
 | ---------- | -------- | --------------------------------------- |
@@ -139,7 +139,7 @@ Error object if the validation failed:
 POST /login
 ```
 
-#### Query parameters
+#### Body parameters
 
 | Name       | Type     | Description                             |
 | ---------- | -------- | --------------------------------------- |
